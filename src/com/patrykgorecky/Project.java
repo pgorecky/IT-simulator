@@ -17,6 +17,8 @@ public class Project {
     Integer paymentsDeadLine;
     Integer chanceForMistake;
     boolean isReceivedFromSeller = false;
+    boolean isTestedByMyself = false;
+    boolean isProgrammedByMyself = false;
     static public Integer technologiesNeeded;
     boolean isActive;
     static Project[] projects = new Project[15];

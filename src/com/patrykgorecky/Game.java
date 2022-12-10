@@ -1,12 +1,12 @@
 package com.patrykgorecky;
 
 import java.text.SimpleDateFormat;
-import java.time.Month;
 import java.util.*;
 
 public class Game {
     static GregorianCalendar day = new GregorianCalendar();
     static Scanner scanner = new Scanner(System.in);
+    static Random random = new Random();
     static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd MMMMM yyyy");
     static boolean shouldContinue = true;
     static private Integer numberOfAvailableProject = 3;
@@ -15,7 +15,8 @@ public class Game {
     static private Integer dayOfSellersSearching = 0;
     static private Integer numberOfSellers = 0;
     static private Integer dayCounter = 3;
-    static private Boolean isWeekend;
+    static private Integer monthCounter = 0;
+    static private Boolean isWeekend = false;
     static private final Integer chanceForGettingSick = 5;
 
     static public void setTime() {
@@ -53,7 +54,6 @@ public class Game {
     }
 
     static public void welcoming() {
-        Scanner scanner = new Scanner(System.in);
         System.out.println("Welcome to the game IT Company Simulator");
         System.out.println("Have fun!!!");
         System.out.println("Press any key to start game");
@@ -80,19 +80,23 @@ public class Game {
         System.out.print("My choice is: ");
     }
 
-    public static void dailyRoutine() {
+    public static void dailyRoutine(Project[] availableProjects) {
         day.add(Calendar.DAY_OF_MONTH, 1);
         dayCounter++;
         if (dayCounter > 7) dayCounter = 1;
         isWeekend = dayCounter == 6 || dayCounter == 7;
+        if (!isWeekend) Game.dailySellersWork(availableProjects);
     }
 
-    public static Project[] signContract(Project[] project, Company cmp) {
-        Scanner scanner = new Scanner(System.in);
+    public static void getAvailableProjects(Project[] project){
+        clearConsole();
         System.out.println("Your current available projects:");
         for (int i = 0; i < numberOfAvailableProject; i++) {
             System.out.println(i + 1 + ". " + project[i]);
         }
+    }
+    public static Project[] signContract(Project[] project, Company cmp) {
+        getAvailableProjects(project);
         System.out.print("Which project do you choose? ");
         int x = scanner.nextInt();
         if (project[x - 1].difficulty == 3 && cmp.numberOfHiredEmployees == 0) {
@@ -132,87 +136,87 @@ public class Game {
     }
 
     public static void programmingDay(Company cmp) {
-        for (int i = 0; i < cmp.activeProjects.length; i++) {
-            System.out.println("Choose project: ");
-            System.out.println(i + 1 + ". " + cmp.activeProjects[i]);
-        }
+        clearConsole();
+        System.out.println("Choose project: ");
+        cmp.getActiveProjects();
         int x = scanner.nextInt();
-        if (!cmp.activeProjects[x - 1].skillsRequired[5]) {
+        if (!cmp.activeProjects.get(x - 1).skillsRequired[5]) {
             System.out.println("Technologies available for programming:");
-            for (int i = 0; i < cmp.activeProjects[x - 1].skillsRequired.length; i++) {
-                System.out.println(i + 1 + ". " + Project.skillsNames[i] + ": " + cmp.activeProjects[x - 1].skillsRequired[i]);
+            for (int i = 0; i < cmp.activeProjects.get(x - 1).skillsRequired.length; i++) {
+                System.out.println(i + 1 + ". " + Project.skillsNames[i] + ": " + cmp.activeProjects.get(x - 1).skillsRequired[i]);
             }
             System.out.println("Which one you choose? ");
             int y = scanner.nextInt();
-            cmp.activeProjects[x - 1].daysNeeded[y - 1]--;
-            if (cmp.activeProjects[x - 1].daysNeeded[y - 1] == 0) cmp.activeProjects[x - 1].isCompleted[y + 1] = true;
+            cmp.activeProjects.get(x - 1).daysNeeded[y - 1]--;
+            cmp.activeProjects.get(x - 1).isProgrammedByMyself = true;
+            if (cmp.activeProjects.get(x - 1).daysNeeded[y - 1] == 0) cmp.activeProjects.get(x - 1).isCompleted[y + 1] = true;
         } else System.out.println("You don't have the skills to do it yourself");
         clearConsole();
     }
 
     public static Integer testTheEmployee(Company cmp) {
+        clearConsole();
         System.out.println("Select the employee you want to test");
         cmp.getActiveWorkers();
         int playerChoice = scanner.nextInt();
-        return cmp.hiredEmployees[playerChoice - 1].chanceForMistake;
+        clearConsole();
+        return cmp.hiredEmployees.get(playerChoice - 1).chanceForMistake;
     }
 
     public static void testingDay(Company cmp) {
+        clearConsole();
         System.out.println("Which project you want to test?");
         cmp.getActiveProjects();
         int projectPick = scanner.nextInt();
+        cmp.activeProjects.get(projectPick - 1).isTestedByMyself = true;
         System.out.println("Whose code you want to test?");
         System.out.println("1. My own code");
         System.out.println("2. One of my workers");
         System.out.println("Whose code you want to test?");
         int codeToTestPick = scanner.nextInt();
         switch (codeToTestPick) {
-            case 1 -> cmp.activeProjects[projectPick - 1].chanceForMistake -= 10;
-            case 2 -> cmp.activeProjects[projectPick - 1].chanceForMistake -= Game.testTheEmployee(cmp);
+            case 1 -> cmp.activeProjects.get(projectPick - 1).chanceForMistake -= 10;
+            case 2 -> cmp.activeProjects.get(projectPick - 1).chanceForMistake -= Game.testTheEmployee(cmp);
             default -> System.out.println("Incorrect value given");
         }
-        Game.clearConsole();
+        clearConsole();
     }
 
     public static void submitProject(Company cmp) {
+        clearConsole();
         if (cmp.activeProjects != null) {
             cmp.getActiveProjects();
             System.out.println("Which project do you want to give away: ");
             int pickProjectToSubmit = scanner.nextInt();
             cmp.getProjectToSubmit(pickProjectToSubmit);
             int pickTechnologyToSubmit = scanner.nextInt();
-            if (cmp.activeProjects[pickProjectToSubmit - 1].isCompleted[pickTechnologyToSubmit - 1]) {
-                if (Game.draw(cmp.activeProjects[pickProjectToSubmit - 1].chanceForMistake)) {
+            if (cmp.activeProjects.get(pickProjectToSubmit - 1).isCompleted[pickTechnologyToSubmit - 1]) {
+                if (Game.draw(cmp.activeProjects.get(pickProjectToSubmit - 1).chanceForMistake)) {
                     System.out.println("Code was invalid!!!");
-                    if (Game.draw(cmp.activeProjects[pickProjectToSubmit - 1].client.dodgePenalty)) {
+                    if (Game.draw(cmp.activeProjects.get(pickProjectToSubmit - 1).client.dodgePenalty)) {
                         System.out.println("Successfully avoided penalty for wrong code");
-                        if (Game.draw(cmp.activeProjects[pickProjectToSubmit - 1].client.lossContract)) {
+                        if (Game.draw(cmp.activeProjects.get(pickProjectToSubmit - 1).client.lossContract)) {
                             System.out.println("Your company lost that contract!");
-                            cmp.activeProjects[pickProjectToSubmit - 1] = null;
-                            Project[] intermediateProjects = new Project[cmp.activeProjects.length - 1];
-                            for (int i = 0; i < intermediateProjects.length; i++) {
-                                if (cmp.activeProjects[i] != null) {
-                                    intermediateProjects[i] = cmp.activeProjects[i];
-                                } else if (cmp.activeProjects[i + 1] != null) {
-                                    intermediateProjects[i] = cmp.activeProjects[i + 1];
-                                    cmp.activeProjects[i + 1] = null;
-                                } else i++;
-                            }
-                            cmp.activeProjects = intermediateProjects;
+                            cmp.activeProjects.remove(pickProjectToSubmit-1);
                         }
-                    } else cmp.actualBudget -= cmp.activeProjects[pickProjectToSubmit - 1].fine;
+                    } else cmp.actualBudget -= cmp.activeProjects.get(pickProjectToSubmit - 1).fine;
                 } else
-                    cmp.actualBudget += (cmp.activeProjects[pickProjectToSubmit - 1].cost / Project.technologiesNeeded);
+                    cmp.actualBudget += (cmp.activeProjects.get(pickProjectToSubmit - 1).cost / Project.technologiesNeeded);
+                cmp.taxOnMonthlyEarnings += (cmp.activeProjects.get(pickProjectToSubmit - 1).cost / 10);
+                cmp.completedProjects.add(cmp.activeProjects.get(pickProjectToSubmit - 1));
             } else System.out.println("This technology is not completed yet!");
         }
-        Game.clearConsole();
+        clearConsole();
     }
-
-    public static Employee[] hireEmployee(Employee[] employees, Company cmp) {
+    public static void getAvailableEmployees(Employee[] employees){
+        clearConsole();
         System.out.println("Available workers for employment:");
         for (int i = 0; i < numberOfAvailableWorkers; i++) {
             System.out.println(i + 1 + ". " + employees[i]);
         }
+    }
+    public static Employee[] hireEmployee(Employee[] employees, Company cmp) {
+        getAvailableEmployees(employees);
         System.out.println("Which one you want to hire? ");
         int x = scanner.nextInt();
         cmp.setHiredEmployees(employees[x - 1]);
@@ -234,6 +238,7 @@ public class Game {
     }
 
     public static void hireSellerOrTester(Company cmp) {
+        clearConsole();
         System.out.println("Who do you want to hire?");
         System.out.println("1. Salesperson");
         System.out.println("2. Tester");
@@ -245,47 +250,65 @@ public class Game {
         clearConsole();
     }
 
-    public static Employee[] fireEmployee(Company cmp) {
-        Scanner scanner = new Scanner(System.in);
-        System.out.println("Choose employee: ");
-        for (int i = 0; i < cmp.numberOfHiredEmployees; i++) {
-            System.out.println(i + 1 + ". " + cmp.hiredEmployees[i]);
-        }
-        int x = scanner.nextInt();
-        cmp.hiredEmployees[x - 1] = null;
-        cmp.actualBudget -= 1000;
-        Employee[] intermediateEmployees = new Employee[cmp.hiredEmployees.length - 1];
-        for (int i = 0; i < intermediateEmployees.length; i++) {
-            if (cmp.hiredEmployees[i] != null) {
-                intermediateEmployees[i] = cmp.hiredEmployees[i];
-            } else {
-                if (cmp.hiredEmployees[i + 1] != null) {
-                    intermediateEmployees[i] = cmp.hiredEmployees[i + 1];
-                    cmp.hiredEmployees[i + 1] = null;
-                } else i++;
-            }
-        }
+    public static void fireEmployee(Company cmp) {
         clearConsole();
-        return intermediateEmployees;
+        System.out.println("Choose employee: ");
+        cmp.getActiveWorkers();
+        int x = scanner.nextInt();
+        cmp.hiredEmployees.remove(x-1);
+        cmp.actualBudget -= 1000;
+        clearConsole();
     }
 
     public static void jobAds(Company cmp) {
+        clearConsole();
         System.out.println("$500 was spent on job advertisements");
         cmp.actualBudget -= 500;
         numberOfAvailableWorkers += 3;
     }
 
     public static void payouts(Company cmp) {
+        clearConsole();
         Double spentMoney = cmp.actualBudget;
-        for (int i = 0; i < cmp.hiredEmployees.length; i++) {
-            double paycheck = ((cmp.hiredEmployees[i].salary + cmp.hiredEmployees[i].salary * 0.1971) / 2);
-            cmp.actualBudget -= paycheck;
+        int i = 0;
+        for (Employee employee : cmp.hiredEmployees){
+            if (!employee.receivedSalary) {
+                employee.receivedSalary = true;
+                double paycheck = ((cmp.hiredEmployees.get(i).salary + cmp.hiredEmployees.get(i).salary * 0.1971) / 2);
+                cmp.actualBudget -= paycheck;
+            }
+            i++;
         }
         cmp.actualBudget -= ((numberOfSellers * 2817 + cmp.numberOfTesters * 3158) / 2);
         if (cmp.actualBudget <= 0) shouldContinue = false;
         spentMoney -= cmp.actualBudget;
         cmp.payoutDays++;
-        System.out.println("Expenses amounted to" + spentMoney);
+        System.out.println("Expenses amounted to: " + spentMoney);
+    }
+    public static void implementationStatus(Company cmp){
+        clearConsole();
+        System.out.println("Projects implementation status");
+        System.out.println("Is completed?");
+        int i = 0;
+        for (Project project : cmp.activeProjects) {
+            for (int j = 0; j < Project.skillsNames.length ; j++) {
+                System.out.print(i + 1 + ". " + project.skillsNames[j] + "-" + project.isCompleted[j] + ", Days left: " + project.daysNeeded[j]);
+            }
+            i++;
+        }
+        System.out.println();
+    }
+    public static void displayInformation(Company cmp, Project[] projects, Employee[] employees){
+        clearConsole();
+        System.out.println("1. Check projects implementation status");
+        System.out.println("2. Check available projects");
+        System.out.println("3. Check available employees");
+        int playerChoice = scanner.nextInt();
+        switch (playerChoice){
+            case 1 -> implementationStatus(cmp);
+            case 2 -> getAvailableProjects(projects);
+            case 3 -> getAvailableEmployees(employees);
+        }
     }
 
     public static void dailySellersWork(Project[] project) {
@@ -300,46 +323,67 @@ public class Game {
             }
         }
     }
-    public static void dailyProgrammersWork(Company cmp){
-        if(!draw(chanceForGettingSick)){
-            if(cmp.numberOfHiredEmployees > 0){
-                for(Employee employee : cmp.hiredEmployees){
-                    for (int i = 0; i < cmp.activeProjects.length; i++){
-                        for (int j = 0; j < Project.skillsNames.length; j++){
-                            if(employee.skills[j] == true && cmp.activeProjects[i].skillsRequired[j] == true){
-                                cmp.activeProjects[i].daysNeeded[j]--;
-                                if (cmp.activeProjects[i].daysNeeded[j] == 0) cmp.activeProjects[i].isCompleted[j] = true;
-                                break;
+
+    public static void dailyProgrammersWork(Company cmp) {
+        if (!draw(chanceForGettingSick)) {
+            if (cmp.activeProjects != null) {
+                if (cmp.numberOfHiredEmployees > 0) {
+                    for (Employee employee : cmp.hiredEmployees) {
+                        int i = 0;
+                        for (Project ignored : cmp.activeProjects) {
+                            for (int j = 0; j < Employee.randomSkills.length; j++) {
+                                if (employee.skills[j] && cmp.activeProjects.get(i).skillsRequired[j]) {
+                                    cmp.activeProjects.get(i).daysNeeded[j]--;
+                                    if (cmp.activeProjects.get(i).daysNeeded[j] == 0)
+                                        cmp.activeProjects.get(i).isCompleted[j] = true;
+                                    break;
+                                }
                             }
+                            i++;
                         }
                     }
                 }
             }
         }
     }
-    public static void dailyTestersWork(Company cmp){
-        Random random = new Random();
-        if(!draw(chanceForGettingSick)){
-            if(cmp.numberOfTesters > (cmp.numberOfHiredEmployees/3)){
-                for (Project project: cmp.activeProjects) {
+
+    public static void dailyTestersWork(Company cmp) {
+        if (!draw(chanceForGettingSick)) {
+            if (cmp.numberOfTesters > (cmp.numberOfHiredEmployees / 3)) {
+                for (Project project : cmp.activeProjects) {
                     project.chanceForMistake = 0;
                 }
             } else if (cmp.numberOfTesters > 0 && cmp.activeProjects != null) {
                 int i = 0;
-                while (cmp.activeProjects[i].chanceForMistake == 0) i++;
+                while (cmp.activeProjects.get(i).chanceForMistake == 0) i++;
                 int rnd = random.nextInt(cmp.numberOfHiredEmployees);
                 int rnd2 = random.nextInt(2);
-                switch (rnd2){
-                    case 0 -> cmp.activeProjects[i].chanceForMistake -= 10;
-                    case 1 -> cmp.activeProjects[i].chanceForMistake -= cmp.hiredEmployees[rnd].chanceForMistake;
+                switch (rnd2) {
+                    case 0 -> cmp.activeProjects.get(i).chanceForMistake -= 10;
+                    case 1 -> cmp.activeProjects.get(i).chanceForMistake -= cmp.hiredEmployees.get(rnd).chanceForMistake;
                 }
             }
         }
     }
 
-    public static void dailyCompany(Company cmp, Project[] availableProjects) {
+    public static void checkWin(Company cmp) {
+        int countProjectsFromSellers = 0;
+        int countBigCompletedProjectsWithoutMyHelp = 0;
+        for (Project project : cmp.completedProjects) {
+            if (!project.isTestedByMyself && !project.isProgrammedByMyself && project.difficulty == 3) {
+                countBigCompletedProjectsWithoutMyHelp++;
+                if (project.isReceivedFromSeller) countProjectsFromSellers++;
+            }
+        }
+        if (countProjectsFromSellers > 0 && countBigCompletedProjectsWithoutMyHelp >= 3 && cmp.initialBudget < cmp.actualBudget) {
+            System.out.println("Congratulations, you won!!!");
+            shouldContinue = false;
+        }
+    }
+
+    public static void dailyCompany(Company cmp) {
+        Game.checkWin(cmp);
         if (!isWeekend) {
-            Game.dailySellersWork(availableProjects);
             Game.dailyProgrammersWork(cmp);
             Game.dailyTestersWork(cmp);
         }
@@ -347,7 +391,27 @@ public class Game {
             shouldContinue = false;
             System.out.println("ZUS punished your company for not paying taxes. You went bankrupt");
         }
-        for (Project project: cmp.activeProjects) {
+        if (day.get(Calendar.MONTH) > monthCounter) {
+            int i = 0;
+            for (Employee employee : cmp.hiredEmployees){
+                if (!employee.receivedSalary) {
+                    cmp.hiredEmployees.remove(i);
+                }
+                i++;
+            }
+            cmp.actualBudget -= cmp.taxOnMonthlyEarnings;
+            cmp.taxOnMonthlyEarnings = 0.0;
+            monthCounter++;
+            if (cmp.actualBudget <= 0) {
+                System.out.println("You have not enough money to pay taxes");
+                shouldContinue = false;
+            }
+        }
+        if (cmp.actualBudget <= 0) {
+            System.out.println("You went bankrupt");
+            shouldContinue = false;
+        }
+        for (Project project : cmp.activeProjects) {
             project.deadLine--;
         }
     }
