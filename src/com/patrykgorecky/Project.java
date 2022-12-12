@@ -5,7 +5,7 @@ import java.util.Random;
 public class Project {
     static String[] names = new String[]{"Accenture", "SAP", "Capgemini", "ATOS", "Google", "Amazon", "Apple", "CD Projekt RED", "Asseco Poland", "Amadeus IT Group", "Spotify", "Sopra Steria", "YouTube", "Twitter", "Facebook"};
     static String[] skillsNames = new String[]{"Front-end", "Backend", "Databases", "Mobile-apps", "WordPress", "PrestaShop"};
-    String projectName;
+    final String projectName;
     Client client;
     Integer difficulty;
     Boolean[] skillsRequired;
@@ -19,7 +19,7 @@ public class Project {
     boolean isReceivedFromSeller = false;
     boolean isTestedByMyself = false;
     boolean isProgrammedByMyself = false;
-    static public Integer technologiesNeeded;
+    Integer howManyTrue;
     boolean isActive;
     static Project[] projects = new Project[15];
 
@@ -35,13 +35,14 @@ public class Project {
         this.paymentsDeadLine = paymentsDeadLine;
         this.isActive = false;
         this.chanceForMistake = 10;
-        this.technologiesNeeded = technologiesNeeded;
+        this.howManyTrue = technologiesNeeded;
     }
 
     static public Project[] generateProjects() {
         Random random = new Random();
+        int howManyTrue = 0;
+        Client client;
         for (int i = 0; i < projects.length; i++) {
-            Client client;
             int x = random.nextInt(1, 4);
             if (x == 1) {
                 client = Client.chilledClient;
@@ -52,7 +53,7 @@ public class Project {
             Boolean[] skills = new Boolean[6];
             Integer[] days = new Integer[6];
             if (level == 1) {
-                technologiesNeeded = 1;
+                howManyTrue = 1;
                 int z = random.nextInt(6);
                 skills[z] = true;
                 days[z] = random.nextInt(1,4);
@@ -63,7 +64,7 @@ public class Project {
                     }
                 }
             } else if (level == 2) {
-                technologiesNeeded = 2;
+                howManyTrue = 2;
                 int b,c;
                 do {
                     b = random.nextInt(6);
@@ -80,9 +81,7 @@ public class Project {
                     }
                 }
             } else {
-                int howManyTrue;
                 do{
-                    howManyTrue = 0;
                     for (int d = 0; d < skills.length; d++){
                         skills[d] = random.nextBoolean();
                         if (skills[d] = true) {
@@ -91,13 +90,12 @@ public class Project {
                         } else days[d] = 0;
                     }
                 } while (howManyTrue < 3);
-                technologiesNeeded = howManyTrue;
             }
             Integer deadLine = random.nextInt(8,16);
             Double fine = random.nextDouble(5000,10000);
             Double price = random.nextDouble(2000,15000);
             Integer deadLinePay = random.nextInt(7,16);
-            projects[i] = new Project(names[i], client, level, skills, days, deadLine, fine, price, deadLine, technologiesNeeded);
+            projects[i] = new Project(names[i], client, level, skills, days, deadLine, fine, price, deadLine, howManyTrue);
         }
         return projects;
     }

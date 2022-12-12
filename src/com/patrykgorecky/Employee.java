@@ -1,10 +1,10 @@
 package com.patrykgorecky;
 
+import java.util.Arrays;
 import java.util.Random;
 
 public class Employee {
     static String[] workersName = new String[]{"Rob", "Martin", "Liam", "Jackson", "Noah", "Aiden", "Grayson", "Caden", "Lucas", "Elijah", "Jack", "Rayon"};
-    String[] skillsNames = new String[]{"Front-end", "Backend", "Databases", "Mobile-apps", "WordPress", "PrestaShop"};
     String name;
     Boolean[] skills;
     Double salary;
@@ -43,6 +43,6 @@ public class Employee {
     }
     @Override
     public String toString() {
-        return "Name: " + name + " Skills: " + skills + " Salary: $" + Math.round(salary) + " " + chanceForDelay + " " + chanceForMistake;
+        return "Name: " + name + " Skills: " + Arrays.toString(skills) + " Salary: $" + Math.round(salary) + " " + chanceForDelay + " " + chanceForMistake;
     }
 }

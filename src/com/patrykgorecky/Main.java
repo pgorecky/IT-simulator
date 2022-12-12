@@ -13,25 +13,28 @@ public class Main {
         Game.startGame(players);
         Game.welcoming();
         while (Game.shouldContinue) {
-            for (Company player : players) {
-                Game.options(player);
+            for (int i = 0; i < players.length; i++){
+                Game.options(players[i]);
                 int playerChoice = scanner.nextInt();
                 switch (playerChoice) {
-                    case 1 -> projects = Game.signContract(projects, player);
+                    case 1 -> projects = Game.signContract(projects, players[i]);
                     case 2 -> Game.customerSearchDay();
-                    case 3 -> Game.programmingDay(player);
-                    case 4 -> Game.testingDay(player);
-                    case 5 -> Game.submitProject(player);
-                    case 6 -> employees = Game.hireEmployee(employees, player);
-                    case 7 -> Game.hireSellerOrTester(player);
-                    case 8 -> Game.fireEmployee(player);
-                    case 9 -> Game.jobAds(player);
-                    case 10 -> Game.payouts(player);
-                    case 11 -> Game.displayInformation(player, projects, employees);
+                    case 3 -> Game.programmingDay(players[i]);
+                    case 4 -> Game.testingDay(players[i]);
+                    case 5 -> Game.submitProject(players[i]);
+                    case 6 -> employees = Game.hireEmployee(employees, players[i]);
+                    case 7 -> Game.hireSellerOrTester(players[i]);
+                    case 8 -> Game.fireEmployee(players[i]);
+                    case 9 -> Game.jobAds(players[i]);
+                    case 10 -> Game.payouts(players[i]);
+                    case 11 -> {
+                        Game.displayInformation(players[i], projects, employees);
+                        i--;
+                    }
                     case 0 -> Game.shouldContinue = false;
                     default -> System.out.println("Incorrect value given");
                 }
-                Game.dailyCompany(player);
+                if (playerChoice != 11) Game.dailyCompany(players[i]);
             }
             Game.dailyRoutine(projects);
         }

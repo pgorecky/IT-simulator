@@ -42,10 +42,9 @@ public class Game {
     }
 
     static public Boolean draw(Integer percentageMistake) {
-        Random rnd = new Random();
-        int x = rnd.nextInt(100);
+        int x = random.nextInt(100);
         boolean draw;
-        draw = x <= percentageMistake;
+        draw = x < percentageMistake;
         return draw;
     }
 
@@ -88,13 +87,14 @@ public class Game {
         if (!isWeekend) Game.dailySellersWork(availableProjects);
     }
 
-    public static void getAvailableProjects(Project[] project){
+    public static void getAvailableProjects(Project[] project) {
         clearConsole();
         System.out.println("Your current available projects:");
         for (int i = 0; i < numberOfAvailableProject; i++) {
             System.out.println(i + 1 + ". " + project[i]);
         }
     }
+
     public static Project[] signContract(Project[] project, Company cmp) {
         getAvailableProjects(project);
         System.out.print("Which project do you choose? ");
@@ -149,7 +149,8 @@ public class Game {
             int y = scanner.nextInt();
             cmp.activeProjects.get(x - 1).daysNeeded[y - 1]--;
             cmp.activeProjects.get(x - 1).isProgrammedByMyself = true;
-            if (cmp.activeProjects.get(x - 1).daysNeeded[y - 1] == 0) cmp.activeProjects.get(x - 1).isCompleted[y + 1] = true;
+            if (cmp.activeProjects.get(x - 1).daysNeeded[y - 1] == 0)
+                cmp.activeProjects.get(x - 1).isCompleted[y + 1] = true;
         } else System.out.println("You don't have the skills to do it yourself");
         clearConsole();
     }
@@ -184,6 +185,8 @@ public class Game {
 
     public static void submitProject(Company cmp) {
         clearConsole();
+        Double money = 0.0;
+        Integer day = 0;
         if (cmp.activeProjects != null) {
             cmp.getActiveProjects();
             System.out.println("Which project do you want to give away: ");
@@ -197,24 +200,37 @@ public class Game {
                         System.out.println("Successfully avoided penalty for wrong code");
                         if (Game.draw(cmp.activeProjects.get(pickProjectToSubmit - 1).client.lossContract)) {
                             System.out.println("Your company lost that contract!");
-                            cmp.activeProjects.remove(pickProjectToSubmit-1);
+                            cmp.activeProjects.remove(pickProjectToSubmit - 1);
                         }
                     } else cmp.actualBudget -= cmp.activeProjects.get(pickProjectToSubmit - 1).fine;
-                } else
-                    cmp.actualBudget += (cmp.activeProjects.get(pickProjectToSubmit - 1).cost / Project.technologiesNeeded);
-                cmp.taxOnMonthlyEarnings += (cmp.activeProjects.get(pickProjectToSubmit - 1).cost / 10);
-                cmp.completedProjects.add(cmp.activeProjects.get(pickProjectToSubmit - 1));
+                } else {
+                    if (cmp.activeProjects.get(pickProjectToSubmit - 1).client.lossContract == 100){
+                        if (draw(1)) cmp.activeProjects.get(pickProjectToSubmit - 1).paymentsDeadLine += 15648;
+                        else if (draw(5)) cmp.activeProjects.get(pickProjectToSubmit - 1).paymentsDeadLine += 30;
+                    }
+                    else if (draw(cmp.activeProjects.get(pickProjectToSubmit - 1).client.latePayment)) {
+                        cmp.activeProjects.get(pickProjectToSubmit - 1).paymentsDeadLine += 7;
+                    }
+                    money = (cmp.activeProjects.get(pickProjectToSubmit - 1).cost / cmp.activeProjects.get(pickProjectToSubmit - 1).howManyTrue);
+                    day = cmp.activeProjects.get(pickProjectToSubmit - 1).paymentsDeadLine;
+                    Company.Payment payment = new Company.Payment(money, day);
+                    cmp.payments.add(payment);
+                    cmp.taxOnMonthlyEarnings += (cmp.activeProjects.get(pickProjectToSubmit - 1).cost / 10);
+                    cmp.completedProjects.add(cmp.activeProjects.get(pickProjectToSubmit - 1));
+                }
             } else System.out.println("This technology is not completed yet!");
         }
         clearConsole();
     }
-    public static void getAvailableEmployees(Employee[] employees){
+
+    public static void getAvailableEmployees(Employee[] employees) {
         clearConsole();
         System.out.println("Available workers for employment:");
         for (int i = 0; i < numberOfAvailableWorkers; i++) {
             System.out.println(i + 1 + ". " + employees[i]);
         }
     }
+
     public static Employee[] hireEmployee(Employee[] employees, Company cmp) {
         getAvailableEmployees(employees);
         System.out.println("Which one you want to hire? ");
@@ -255,7 +271,7 @@ public class Game {
         System.out.println("Choose employee: ");
         cmp.getActiveWorkers();
         int x = scanner.nextInt();
-        cmp.hiredEmployees.remove(x-1);
+        cmp.hiredEmployees.remove(x - 1);
         cmp.actualBudget -= 1000;
         clearConsole();
     }
@@ -271,7 +287,7 @@ public class Game {
         clearConsole();
         Double spentMoney = cmp.actualBudget;
         int i = 0;
-        for (Employee employee : cmp.hiredEmployees){
+        for (Employee employee : cmp.hiredEmployees) {
             if (!employee.receivedSalary) {
                 employee.receivedSalary = true;
                 double paycheck = ((cmp.hiredEmployees.get(i).salary + cmp.hiredEmployees.get(i).salary * 0.1971) / 2);
@@ -285,26 +301,28 @@ public class Game {
         cmp.payoutDays++;
         System.out.println("Expenses amounted to: " + spentMoney);
     }
-    public static void implementationStatus(Company cmp){
+
+    public static void implementationStatus(Company cmp) {
         clearConsole();
         System.out.println("Projects implementation status");
         System.out.println("Is completed?");
         int i = 0;
         for (Project project : cmp.activeProjects) {
-            for (int j = 0; j < Project.skillsNames.length ; j++) {
+            for (int j = 0; j < Project.skillsNames.length; j++) {
                 System.out.print(i + 1 + ". " + project.skillsNames[j] + "-" + project.isCompleted[j] + ", Days left: " + project.daysNeeded[j]);
             }
             i++;
         }
         System.out.println();
     }
-    public static void displayInformation(Company cmp, Project[] projects, Employee[] employees){
+
+    public static void displayInformation(Company cmp, Project[] projects, Employee[] employees) {
         clearConsole();
         System.out.println("1. Check projects implementation status");
         System.out.println("2. Check available projects");
         System.out.println("3. Check available employees");
         int playerChoice = scanner.nextInt();
-        switch (playerChoice){
+        switch (playerChoice) {
             case 1 -> implementationStatus(cmp);
             case 2 -> getAvailableProjects(projects);
             case 3 -> getAvailableEmployees(employees);
@@ -360,7 +378,8 @@ public class Game {
                 int rnd2 = random.nextInt(2);
                 switch (rnd2) {
                     case 0 -> cmp.activeProjects.get(i).chanceForMistake -= 10;
-                    case 1 -> cmp.activeProjects.get(i).chanceForMistake -= cmp.hiredEmployees.get(rnd).chanceForMistake;
+                    case 1 ->
+                            cmp.activeProjects.get(i).chanceForMistake -= cmp.hiredEmployees.get(rnd).chanceForMistake;
                 }
             }
         }
@@ -381,8 +400,16 @@ public class Game {
         }
     }
 
+    public static void checkPayments(Company cmp) {
+        for (Company.Payment pay : cmp.payments) {
+            if (pay.daysOfWaiting == pay.paymentDeadLine) cmp.actualBudget += pay.moneyInQue;
+            else pay.daysOfWaiting++;
+        }
+    }
+
     public static void dailyCompany(Company cmp) {
         Game.checkWin(cmp);
+        Game.checkPayments(cmp);
         if (!isWeekend) {
             Game.dailyProgrammersWork(cmp);
             Game.dailyTestersWork(cmp);
@@ -393,7 +420,7 @@ public class Game {
         }
         if (day.get(Calendar.MONTH) > monthCounter) {
             int i = 0;
-            for (Employee employee : cmp.hiredEmployees){
+            for (Employee employee : cmp.hiredEmployees) {
                 if (!employee.receivedSalary) {
                     cmp.hiredEmployees.remove(i);
                 }

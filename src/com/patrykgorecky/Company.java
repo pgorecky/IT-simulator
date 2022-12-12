@@ -5,16 +5,26 @@ import java.util.List;
 
 public class Company {
     final Double initialBudget = 50000.0;
-    public Double actualBudget = initialBudget;
-    public Double taxOnMonthlyEarnings = 0.0;
-    public String name;
+    Double actualBudget = initialBudget;
+    Double taxOnMonthlyEarnings = 0.0;
+    String name;
     Integer numberOfActiveProjects = 0;
-    public Integer numberOfHiredEmployees = 0;
-    public List<Project> activeProjects = new ArrayList<>();
-    public List<Employee> hiredEmployees = new ArrayList<>();
-    public List<Project> completedProjects = new ArrayList<>();
-    public Integer numberOfTesters = 0;
-    public Integer payoutDays = 0;
+    Integer numberOfHiredEmployees = 0;
+    List<Project> activeProjects = new ArrayList<>();
+    List<Employee> hiredEmployees = new ArrayList<>();
+    List<Project> completedProjects = new ArrayList<>();
+    List<Payment> payments = new ArrayList<>();
+    Integer numberOfTesters = 0;
+    Integer payoutDays = 0;
+    static class Payment{
+        Double moneyInQue;
+        final Integer paymentDeadLine;
+        Integer daysOfWaiting;
+        public Payment(Double moneyInQue, Integer daysOfWaitingForMoney){
+            this.paymentDeadLine = daysOfWaitingForMoney;
+            this.moneyInQue = moneyInQue;
+        }
+    }
 
 
     public Company(String name){
